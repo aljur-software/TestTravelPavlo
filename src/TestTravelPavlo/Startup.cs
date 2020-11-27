@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Infractructure;
+using Services;
 
 namespace TestTravelPavlo
 {
@@ -27,6 +28,7 @@ namespace TestTravelPavlo
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "TestTravelPavlo", Version = "v1" });
             });
             services.AddInfrastructure(Configuration);
+            services.AddServices();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
