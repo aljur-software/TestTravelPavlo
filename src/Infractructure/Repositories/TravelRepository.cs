@@ -3,16 +3,17 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Application.Common.Interfaces;
+using Infractructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infractructure.Repositories
 {
-    public class TravelRepository<T> : IRepository<T>where T: class
+    public class TravelRepository<T> : IRepository<T> where T: class
     {
         private readonly DbSet<T> _dbSet;
-        private readonly DbContext _context;
+        private readonly ApplicationDbContext _context;
       
-        public TravelRepository(DbContext context)
+        public TravelRepository(ApplicationDbContext context)
         {
             _context = context;
             _dbSet = context.Set<T>();
