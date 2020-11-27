@@ -8,5 +8,9 @@ namespace Infractructure.Persistence
         public DbSet<Agency> Agencies { get; set; }
         public DbSet<Agent> Agents { get; set; }
 
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options):base(options)
+        {
+            Database.EnsureCreated();
+        }
     }
 }

@@ -12,6 +12,6 @@ namespace Domain.Entities
         public string ContactInformation { get; set; }
         public string Status { get; set; }
         public string LegalEntityInformation { get; set; }
-        public IList<Agent> Agents { get; set; }
+        public IList<Agent> Agents { get; } = new List<Agent>();
     }
 }
