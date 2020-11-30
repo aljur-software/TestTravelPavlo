@@ -8,6 +8,7 @@ namespace Services
         public static IServiceCollection AddServices(this IServiceCollection services)
         {
             services.AddTransient<IAgencyService, AgencyService>();
+            services.AddTransient<IAgentService, AgentService>();
 
             return services;
         }
