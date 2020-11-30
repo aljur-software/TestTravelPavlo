@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 
 namespace Application.Common.Interfaces
 {
@@ -10,12 +8,10 @@ namespace Application.Common.Interfaces
     {
         void SaveChanges();
 
-        Task SaveChangesAsync();
-
-        IQueryable<T> GetAll();
+        IEnumerable<T> GetAll();
 
         void Add(T entity);
 
-        IQueryable<T> FindBy(Expression<Func<T, bool>> predicate);
+        IEnumerable<T> FindBy(Expression<Func<T, bool>> predicate);
     }
 }

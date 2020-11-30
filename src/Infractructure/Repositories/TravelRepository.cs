@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 using Application.Common.Interfaces;
 using Infractructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -19,12 +19,12 @@ namespace Infractructure.Repositories
             _dbSet = context.Set<T>();
         }
        
-        public virtual IQueryable<T> GetAll()
+        public virtual IEnumerable<T> GetAll()
         {
             return _dbSet.AsNoTracking();
         }
 
-        public virtual IQueryable<T> FindBy(Expression<Func<T, bool>> predicate)
+        public virtual IEnumerable<T> FindBy(Expression<Func<T, bool>> predicate)
         {
             return _dbSet.Where(predicate);
         }
@@ -37,11 +37,6 @@ namespace Infractructure.Repositories
         public virtual void SaveChanges()
         {
             _context.SaveChanges();
-        }
-
-        public virtual Task SaveChangesAsync()
-        {
-            return _context.SaveChangesAsync();
         }
     }
 }

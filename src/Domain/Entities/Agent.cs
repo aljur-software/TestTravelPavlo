@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Domain.Entities
 {
@@ -9,6 +10,6 @@ namespace Domain.Entities
         public string Description { get; set; }
         public string Type { get; set; }
         public string ContactInformation { get; set; }
-
+        public List<Agency> Agencies { get; } = new List<Agency>();
     }
 }

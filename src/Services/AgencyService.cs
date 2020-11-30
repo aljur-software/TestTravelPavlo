@@ -10,16 +10,19 @@ namespace Services
 {
     public class AgencyService : IAgencyService
     {
-        private readonly IRepository<Agency> _repository;
+        private readonly IRepository<Agency> _agencyRepository;
 
-        public AgencyService(IRepository<Agency> repository)
+        public AgencyService(IRepository<Agency> agencyRepository)
         {
-            _repository = repository;
+            _agencyRepository = agencyRepository;
         }
 
         public async Task<IEnumerable<Agency>> GetAllAgencies()
         {
-            return _repository.GetAll().Include(_ => _.Agents).ToList();
+            return  _agencyRepository.GetAll()
+                .AsQueryable()
+                .Include(_ => _.Agents)
+                .ToList();
         }
     }
 }
