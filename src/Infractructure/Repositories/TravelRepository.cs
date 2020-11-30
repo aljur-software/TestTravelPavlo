@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
+using System.Threading.Tasks;
 using Application.Common.Interfaces;
 using Infractructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -29,14 +31,18 @@ namespace Infractructure.Repositories
             return _dbSet.Where(predicate);
         }
 
-        public virtual void Add(T entity)
+        public async Task<T> CreateRecordAsync(T record, CancellationToken cancellationToken = default)
         {
-            _dbSet.Add(entity);
+            var result = await _context.AddAsync(record, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+            return result.Entity;
         }
 
-        public virtual void SaveChanges()
+        public async Task<int> UpdateRecordAsync(T record, CancellationToken cancellationToken = default)
         {
-            _context.SaveChanges();
+            var result = _context.Attach(record);
+            result.State = EntityState.Modified;
+            return await _context.SaveChangesAsync(cancellationToken);
         }
     }
 }

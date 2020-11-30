@@ -1,3 +1,5 @@
+using AutoMapper;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -6,6 +8,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Infractructure;
 using Services;
+using TestTravelPavlo.AutoMapper;
 
 namespace TestTravelPavlo
 {
@@ -31,6 +34,10 @@ namespace TestTravelPavlo
             });
             services.AddInfrastructure(Configuration);
             services.AddServices();
+            services.AddAutoMapper(typeof(AgencyProfile).Assembly);
+
+            services.AddMvc().AddFluentValidation(config =>
+                config.RegisterValidatorsFromAssemblyContaining<Startup>());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
