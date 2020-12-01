@@ -9,6 +9,7 @@ namespace TestTravelPavlo.AutoMapper
         public AgentProfile()
         {
             CreateMap<CreateAgentCommand, Agent>();
+            CreateMap<Agent, CreateAgentCommand>();
         }
     }
 }
