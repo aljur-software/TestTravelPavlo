@@ -23,7 +23,7 @@ namespace TestTravelPavlo.Controllers
         }
 
         [HttpGet]
-        [Route("{Id?}")]
+        [Route("{id}")]
         public async Task<IActionResult> Get(Guid id)
         {
             try
