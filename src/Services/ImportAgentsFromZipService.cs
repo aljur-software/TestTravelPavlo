@@ -48,15 +48,18 @@ namespace Services
 
             foreach (var entity in entities)
             {
+                
                 var createEntityCommand = _mapper.Map<CreateAgentCommand>(entity);
-                var createEntityResult = await _agentService.CreateAsync(createEntityCommand);
-                if (createEntityResult != null)
+
+                try
                 {
+                    var createEntityResult = await _agentService.CreateAsync(createEntityCommand);
                     result.SuccessfullyImported.Add(createEntityResult);
                 }
-                else
+                catch
                 {
                     result.NotImported.Add(entity);
+
                 }
             }
 
