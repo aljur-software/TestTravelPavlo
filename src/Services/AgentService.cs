@@ -70,7 +70,7 @@ namespace Services
             var agency = _agentRepository.FindBy(_ => _.Id == id)
                 .AsQueryable()
                 .Include(_ => _.Agencies)
-                .First();
+                .FirstOrDefault();
 
             if (agency == null)
                 throw new NotFoundException<Guid>(nameof(Agent), id);
