@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Application.Common.Interfaces;
 using Infractructure.Persistence;
@@ -19,29 +21,28 @@ namespace Infractructure.Repositories
             _dbSet = context.Set<T>();
         }
        
-        public virtual IQueryable<T> GetAll()
+        public virtual IEnumerable<T> GetAll()
         {
             return _dbSet.AsNoTracking();
         }
 
-        public virtual IQueryable<T> FindBy(Expression<Func<T, bool>> predicate)
+        public virtual IEnumerable<T> FindBy(Expression<Func<T, bool>> predicate)
         {
             return _dbSet.Where(predicate);
         }
 
-        public virtual void Add(T entity)
+        public async Task<T> CreateRecordAsync(T record, CancellationToken cancellationToken = default)
         {
-            _dbSet.Add(entity);
+            var result = await _context.AddAsync(record, cancellationToken);
+            await _context.SaveChangesAsync(cancellationToken);
+            return result.Entity;
         }
 
-        public virtual void SaveChanges()
+        public async Task<int> UpdateRecordAsync(T record, CancellationToken cancellationToken = default)
         {
-            _context.SaveChanges();
-        }
-
-        public virtual Task SaveChangesAsync()
-        {
-            return _context.SaveChangesAsync();
+            var result = _context.Attach(record);
+            result.State = EntityState.Modified;
+            return await _context.SaveChangesAsync(cancellationToken);
         }
     }
 }

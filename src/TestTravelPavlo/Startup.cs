@@ -1,3 +1,5 @@
+using AutoMapper;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -5,6 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Infractructure;
+using Services;
+using TestTravelPavlo.AutoMapper;
 
 namespace TestTravelPavlo
 {
@@ -21,12 +25,19 @@ namespace TestTravelPavlo
         public void ConfigureServices(IServiceCollection services)
         {
 
-            services.AddControllers();
+            services.AddControllers().AddNewtonsoftJson(options =>
+                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+            );
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "TestTravelPavlo", Version = "v1" });
             });
             services.AddInfrastructure(Configuration);
+            services.AddServices();
+            services.AddAutoMapper(typeof(AgencyProfile).Assembly);
+
+            services.AddMvc().AddFluentValidation(config =>
+                config.RegisterValidatorsFromAssemblyContaining<Startup>());
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
