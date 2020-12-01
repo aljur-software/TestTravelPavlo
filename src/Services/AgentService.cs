@@ -67,15 +67,15 @@ namespace Services
             if(id == Guid.Empty)
                 throw new ArgumentException(nameof(id));
 
-            var agency = _agentRepository.FindBy(_ => _.Id == id)
+            var agent = _agentRepository.FindBy(_ => _.Id == id)
                 .AsQueryable()
                 .Include(_ => _.Agencies)
                 .FirstOrDefault();
 
-            if (agency == null)
+            if (agent == null)
                 throw new NotFoundException<Guid>(nameof(Agent), id);
 
-            return agency;
+            return agent;
         }
     }
 }
