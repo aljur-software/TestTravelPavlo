@@ -68,6 +68,7 @@ namespace TestTravelPavlo.Controllers
             {
                 var entitiesFromFile = _importService.GetEntitiesFromFile(stream);
                 var importResult = await _importService.Import(entitiesFromFile);
+
                 return Ok(importResult);
             }
         }

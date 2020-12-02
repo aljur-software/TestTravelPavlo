@@ -65,6 +65,7 @@ namespace Services
             {
                 throw  new ArgumentNullException(nameof(filter));
             }
+
             return _agencyRepository.PaginationAsync(filter);
         }
     }

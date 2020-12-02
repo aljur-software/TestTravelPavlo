@@ -29,9 +29,7 @@ namespace TestTravelPavlo.Controllers
         {
             try
             {
-                var result = await _agencyservice.GetById(id);
-
-                return Ok(result);
+                return Ok(await _agencyservice.GetById(id));
             }
             catch (NotFoundException<Guid>)
             {

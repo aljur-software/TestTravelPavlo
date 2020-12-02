@@ -39,6 +39,7 @@ namespace Infractructure.Repositories
         {
             var result = await _context.AddAsync(record, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
+
             return result.Entity;
         }
 
@@ -46,6 +47,7 @@ namespace Infractructure.Repositories
         {
             var result = _context.Attach(record);
             result.State = EntityState.Modified;
+
             return await _context.SaveChangesAsync(cancellationToken);
         }
 
