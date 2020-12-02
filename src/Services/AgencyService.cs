@@ -8,6 +8,8 @@ using Application.Common.Services;
 using AutoMapper;
 using Domain.Commands.AgencyCommands;
 using Domain.Entities;
+using Domain.Paging.Filters;
+using Domain.Wrappers;
 using Microsoft.EntityFrameworkCore;
 
 namespace Services
@@ -17,7 +19,8 @@ namespace Services
         private readonly IRepository<Agency> _agencyRepository;
         private readonly IMapper _mapper;
 
-        public AgencyService(IRepository<Agency> agencyRepository, IMapper mapper)
+        public AgencyService(IRepository<Agency> agencyRepository,
+            IMapper mapper)
         {
             _agencyRepository = agencyRepository;
             _mapper = mapper;
@@ -46,16 +49,23 @@ namespace Services
         {
             if (id == Guid.Empty)
                 throw new ArgumentException(nameof(id));
-
             var agency = _agencyRepository.FindBy(_ => _.Id == id)
                 .AsQueryable()
                 .Include(_ => _.Agents)
                 .FirstOrDefault();
-
             if (agency == null)
                 throw new NotFoundException<Guid>(nameof(Agency), id);
 
             return agency;
+        }
+
+        public async Task<PagedResponse<IEnumerable<Agency>>> FilterAsync(PaginationFilter filter)
+        {
+            if (filter == null)
+            {
+                throw  new ArgumentNullException(nameof(filter));
+            }
+            return _agencyRepository.PaginationAsync(filter);
         }
     }
 }

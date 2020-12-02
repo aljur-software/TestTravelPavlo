@@ -5,8 +5,12 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Common.Interfaces;
+using Domain.Paging.Filters;
+using Domain.Wrappers;
 using Infractructure.Persistence;
 using Microsoft.EntityFrameworkCore;
+using Application.Common.Extensions;
+using Domain.Paging;
 
 namespace Infractructure.Repositories
 {
@@ -20,7 +24,7 @@ namespace Infractructure.Repositories
             _context = context;
             _dbSet = context.Set<T>();
         }
-       
+
         public virtual IEnumerable<T> GetAll()
         {
             return _dbSet.AsNoTracking();
@@ -43,6 +47,22 @@ namespace Infractructure.Repositories
             var result = _context.Attach(record);
             result.State = EntityState.Modified;
             return await _context.SaveChangesAsync(cancellationToken);
+        }
+
+        public PagedResponse<IEnumerable<T>> PaginationAsync(PaginationFilter filter)
+        {
+            var entries = _dbSet.GetPaged(filter.PageNumber, filter.PageSize);
+            var totalEntries = _dbSet.Count();
+            var pagingModel = new PagingModel()
+            {
+                PageNumber = filter.PageNumber,
+                PageSize = filter.PageSize,
+                TotalPages = (int)Math.Ceiling((double)totalEntries / filter.PageSize),
+                TotalEntries = totalEntries
+            };
+            var result = new PagedResponse<IEnumerable<T>>(entries, pagingModel);
+
+            return result;
         }
     }
 }

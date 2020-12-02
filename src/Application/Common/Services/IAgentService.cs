@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Domain.Commands.AgentCommands;
 using Domain.Entities;
+using Domain.Paging.Filters;
+using Domain.Wrappers;
 
 namespace Application.Common.Services
 {
@@ -12,5 +14,6 @@ namespace Application.Common.Services
         Task<bool> AddAgentToAgency(AddAgentToAgencyCommand command);
         Task<IEnumerable<Agent>> GetAll();
         Task<Agent> GetById(Guid Id);
+        Task<PagedResponse<IEnumerable<Agent>>> FilterAsync(PaginationFilter filter);
     }
 }

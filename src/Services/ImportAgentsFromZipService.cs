@@ -29,7 +29,6 @@ namespace Services
             using (var archive = new ZipArchive(fileStream))
             {
                 var entries = archive.Entries;
-
                 foreach (var entry in entries)
                 {
                     result.AddRange(DeserializeEntry(entry));
@@ -43,14 +42,10 @@ namespace Services
         {
             if (entities == null)
                 throw new ArgumentNullException(nameof(entities));
-
             var result = new ImportResult<Agent>();
-
             foreach (var entity in entities)
             {
-                
                 var createEntityCommand = _mapper.Map<CreateAgentCommand>(entity);
-
                 try
                 {
                     var createEntityResult = await _agentService.CreateAsync(createEntityCommand);
@@ -59,7 +54,6 @@ namespace Services
                 catch
                 {
                     result.NotImported.Add(entity);
-
                 }
             }
 
@@ -70,9 +64,9 @@ namespace Services
         {
             if(entry == null)
                 throw new ArgumentNullException(nameof(entry));
-
             var serializer = new XmlSerializer(typeof(List<Agent>), new XmlRootAttribute() { ElementName = "Agents" });
             var result = (List<Agent>)serializer.Deserialize(entry.Open());
+
             return result;
         }
     }
