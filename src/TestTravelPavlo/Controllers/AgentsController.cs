@@ -4,6 +4,7 @@ using Application.Common.Exceptions;
 using Application.Common.Services;
 using Domain.Commands.AgentCommands;
 using Domain.Entities;
+using Domain.Paging.Filters;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -42,9 +43,9 @@ namespace TestTravelPavlo.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get()
+        public async Task<IActionResult> Get([FromQuery] PaginationFilter filter)
         {
-            return Ok(_agentService.GetAll());
+            return Ok(await _agentService.FilterAsync(filter));
         }
 
         [HttpPost]
@@ -54,7 +55,6 @@ namespace TestTravelPavlo.Controllers
             {
                 return BadRequest(ModelState);
             }
-
             var result = await _agentService.CreateAsync(command);
 
             return Created($"/agent/{result.Id}", result);
@@ -68,6 +68,7 @@ namespace TestTravelPavlo.Controllers
             {
                 var entitiesFromFile = _importService.GetEntitiesFromFile(stream);
                 var importResult = await _importService.Import(entitiesFromFile);
+
                 return Ok(importResult);
             }
         }

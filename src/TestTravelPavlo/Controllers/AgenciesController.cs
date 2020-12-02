@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Application.Common.Exceptions;
 using Application.Common.Services;
 using Domain.Commands.AgencyCommands;
+using Domain.Paging.Filters;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
@@ -28,9 +29,7 @@ namespace TestTravelPavlo.Controllers
         {
             try
             {
-                var result = await _agencyservice.GetById(id);
-
-                return Ok(result);
+                return Ok(await _agencyservice.GetById(id));
             }
             catch (NotFoundException<Guid>)
             {
@@ -39,9 +38,9 @@ namespace TestTravelPavlo.Controllers
         }
 
         [HttpGet]
-        public IActionResult Get()
-        { 
-            return Ok(_agencyservice.GetAll());
+        public async Task<IActionResult> Get([FromQuery]PaginationFilter filter)
+        {
+            return Ok(await _agencyservice.FilterAsync(filter));
         }
 
         [HttpPost]
@@ -51,7 +50,6 @@ namespace TestTravelPavlo.Controllers
             {
                 return BadRequest(ModelState);
             }
-
             var result = await _agencyservice.CreateAsync(command);
 
             return Created($"/agencies/{result.Id}" ,result);

@@ -14,11 +14,9 @@ namespace Infractructure
         {
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
-
             services.AddTransient(typeof(IRepository<>), typeof(TravelRepository<>));
 
             return services;
-
         }
     }
 }
