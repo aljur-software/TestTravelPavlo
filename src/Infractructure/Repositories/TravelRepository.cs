@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Transactions;
 using Application.Common.Interfaces;
 using Domain.Paging.Filters;
 using Domain.Wrappers;
@@ -11,6 +12,7 @@ using Infractructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Application.Common.Extensions;
 using Domain.Paging;
+using Microsoft.EntityFrameworkCore.Design;
 
 namespace Infractructure.Repositories
 {
@@ -18,7 +20,7 @@ namespace Infractructure.Repositories
     {
         private readonly DbSet<T> _dbSet;
         private readonly ApplicationDbContext _context;
-      
+
         public TravelRepository(ApplicationDbContext context)
         {
             _context = context;
@@ -41,6 +43,27 @@ namespace Infractructure.Repositories
             await _context.SaveChangesAsync(cancellationToken);
 
             return result.Entity;
+        }
+
+        public void BulkInsert(T record)
+        {
+            using (var scope = new TransactionScope())
+            {
+                try
+                {
+                    _context.ChangeTracker.AutoDetectChangesEnabled = false;
+                    _dbSet.Add(record);
+                    _context.SaveChanges();
+                }
+                finally
+                {
+                    if (_context != null)
+                    {
+                        _context.ChangeTracker.AutoDetectChangesEnabled = true;
+                    }
+                    scope.Complete();
+                }
+            }
         }
 
         public async Task<int> UpdateRecordAsync(T record, CancellationToken cancellationToken = default)
