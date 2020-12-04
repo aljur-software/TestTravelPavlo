@@ -1,21 +1,21 @@
-﻿using System;
+﻿using Application.Common.Services;
+using Domain.Entities;
+using Domain.Import;
+using Infractructure.BulkData;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
-using Application.Common.Interfaces;
-using Application.Common.Services;
-using Domain.Entities;
-using Domain.Import;
 
 namespace Services
 {
     public class ImportAgenciesWithAgentsFromZipService : IImportService<Agency>
     {
-        private readonly IRepository<Agency> _agencyRepository;
+        private readonly AgencyBulkImport _agencyRepository;
 
-        public ImportAgenciesWithAgentsFromZipService(IRepository<Agency> agencyRepository)
+        public ImportAgenciesWithAgentsFromZipService(AgencyBulkImport agencyRepository)
         {
             _agencyRepository = agencyRepository;
         }
@@ -28,9 +28,11 @@ namespace Services
                 var entries = archive.Entries;
                 foreach (var entry in entries)
                 {
-                    yield return DeserializeEntry(entry);
+                    result.Add(DeserializeEntry(entry));
                 }
             }
+
+            return result;
         }
 
         public async Task<ImportResult> Import(IEnumerable<Agency> entities)
@@ -38,7 +40,7 @@ namespace Services
             if (entities == null)
                 throw new ArgumentNullException(nameof(entities));
             var result = new ImportResult();
-            _agencyRepository.BulkInsert(entities);
+            _agencyRepository.Import(entities);
 
             return result;
         }

@@ -15,6 +15,5 @@ namespace Application.Common.Interfaces
         Task<int> UpdateRecordAsync(T record, CancellationToken cancellationToken = default);
         IEnumerable<T> FindBy(Expression<Func<T, bool>> predicate);
         PagedResponse<IEnumerable<T>> PaginationAsync(PaginationFilter filter);
-        void BulkInsert(IEnumerable<T> record);
     }
 }

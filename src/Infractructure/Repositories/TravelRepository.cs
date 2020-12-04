@@ -1,10 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.AccessControl;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
+using System.Security;
+using System.Security.Permissions;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Transactions;
 using Application.Common.Interfaces;
 using Domain.Paging.Filters;
 using Domain.Wrappers;
@@ -38,31 +43,10 @@ namespace Infractructure.Repositories
 
         public async Task<T> CreateRecordAsync(T record, CancellationToken cancellationToken = default)
         {
-            var result = await _context.AddAsync(record, cancellationToken);
+            var result = await _dbSet.AddAsync(record, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
 
             return result.Entity;
-        }
-
-        public void BulkInsert(IEnumerable<T> records)
-        {
-            using (var scope = new TransactionScope())
-            {
-                try
-                { 
-                    _context.ChangeTracker.AutoDetectChangesEnabled = false;
-                    _context.AddRange(records);
-                    _context.SaveChanges();
-                }
-                finally
-                {
-                    if (_context != null)
-                    {
-                        _context.ChangeTracker.AutoDetectChangesEnabled = true;
-                    }
-                    scope.Complete();
-                }
-            }
         }
 
         public async Task<int> UpdateRecordAsync(T record, CancellationToken cancellationToken = default)

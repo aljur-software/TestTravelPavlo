@@ -66,13 +66,7 @@ namespace TestTravelPavlo.Controllers
         {
             using (var stream = file.OpenReadStream())
             {
-                var startTime = DateTime.Now;
                 var importResult = await _importService.Import(_importService.GetEntitiesFromFile(stream));
-                var endTime = DateTime.Now;
-
-                importResult.NotImported.Add(startTime);
-                importResult.NotImported.Add(endTime);
-                importResult.NotImported.Add(endTime-startTime);
                 return Ok(importResult);
             }
         }
