@@ -12,7 +12,6 @@ using Infractructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Application.Common.Extensions;
 using Domain.Paging;
-using Microsoft.EntityFrameworkCore.Design;
 
 namespace Infractructure.Repositories
 {
@@ -45,14 +44,14 @@ namespace Infractructure.Repositories
             return result.Entity;
         }
 
-        public void BulkInsert(T record)
+        public void BulkInsert(IEnumerable<T> records)
         {
             using (var scope = new TransactionScope())
             {
                 try
-                {
+                { 
                     _context.ChangeTracker.AutoDetectChangesEnabled = false;
-                    _dbSet.Add(record);
+                    _context.AddRange(records);
                     _context.SaveChanges();
                 }
                 finally

@@ -38,18 +38,7 @@ namespace Services
             if (entities == null)
                 throw new ArgumentNullException(nameof(entities));
             var result = new ImportResult();
-            foreach (var entity in entities)
-            {
-                try
-                {  
-                    _agencyRepository.BulkInsert(entity);
-                    result.SuccessfullyImported.Add(entity.Name);
-                }
-                catch
-                {
-                   result.NotImported.Add(entity.Name);
-                }
-            }
+            _agencyRepository.BulkInsert(entities);
 
             return result;
         }
