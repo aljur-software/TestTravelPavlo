@@ -17,13 +17,11 @@ namespace TestTravelPavlo.Controllers
     {
         private readonly ILogger<AgentsController> _logger;
         private readonly IAgentService _agentService;
-        private readonly IImportService<Agent> _importService;
 
-        public AgentsController(ILogger<AgentsController> logger, IAgentService agentService, IImportService<Agent> importService)
+        public AgentsController(ILogger<AgentsController> logger, IAgentService agentService)
         {
             _logger = logger;
             _agentService = agentService;
-            _importService = importService;
         }
 
         [HttpGet]
@@ -58,19 +56,6 @@ namespace TestTravelPavlo.Controllers
             var result = await _agentService.CreateAsync(command);
 
             return Created($"/agent/{result.Id}", result);
-        }
-
-        [HttpPost]
-        [Route("[action]")]
-        public async Task<IActionResult> Import(IFormFile file)
-        {
-            using (var stream = file.OpenReadStream())
-            {
-                var entitiesFromFile = _importService.GetEntitiesFromFile(stream);
-                var importResult = await _importService.Import(entitiesFromFile);
-
-                return Ok(importResult);
-            }
         }
 
         [HttpPut]

@@ -10,7 +10,7 @@ namespace Services
         {
             services.AddTransient<IAgencyService, AgencyService>();
             services.AddTransient<IAgentService, AgentService>();
-            services.AddTransient<IImportService<Agent>, ImportAgentsFromZipService>();
+            services.AddTransient<IImportService<Agency>, ImportAgenciesWithAgentsFromZipService>();
 
             return services;
         }

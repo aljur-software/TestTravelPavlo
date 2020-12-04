@@ -1,7 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Security.AccessControl;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
+using System.Security;
+using System.Security.Permissions;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Application.Common.Interfaces;
@@ -18,7 +24,7 @@ namespace Infractructure.Repositories
     {
         private readonly DbSet<T> _dbSet;
         private readonly ApplicationDbContext _context;
-      
+
         public TravelRepository(ApplicationDbContext context)
         {
             _context = context;
@@ -37,7 +43,7 @@ namespace Infractructure.Repositories
 
         public async Task<T> CreateRecordAsync(T record, CancellationToken cancellationToken = default)
         {
-            var result = await _context.AddAsync(record, cancellationToken);
+            var result = await _dbSet.AddAsync(record, cancellationToken);
             await _context.SaveChangesAsync(cancellationToken);
 
             return result.Entity;

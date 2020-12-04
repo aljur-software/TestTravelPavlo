@@ -8,6 +8,6 @@ namespace Application.Common.Services
     public interface IImportService<T> where T : class
     {
         IEnumerable<T> GetEntitiesFromFile(Stream fileStream);
-        Task<ImportResult<T>> Import(IEnumerable<T> entities);
+        Task<ImportResult> Import(IEnumerable<T> entities);
     }
 }

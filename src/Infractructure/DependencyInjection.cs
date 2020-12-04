@@ -1,4 +1,5 @@
 ﻿using Application.Common.Interfaces;
+using Infractructure.BulkData;
 using Infractructure.Persistence;
 using Infractructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +16,7 @@ namespace Infractructure
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
             services.AddTransient(typeof(IRepository<>), typeof(TravelRepository<>));
+            services.AddTransient(typeof(AgencyBulkImport));
 
             return services;
         }

@@ -57,7 +57,6 @@ namespace Services
         {
             return _agentRepository.GetAll()
                 .AsQueryable()
-                .Include(_ => _.Agencies)
                 .ToList();
         }
 
