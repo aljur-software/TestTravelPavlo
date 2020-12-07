@@ -3,9 +3,7 @@ using System.Threading.Tasks;
 using Application.Common.Exceptions;
 using Application.Common.Services;
 using Domain.Commands.AgentCommands;
-using Domain.Entities;
 using Domain.Paging.Filters;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 

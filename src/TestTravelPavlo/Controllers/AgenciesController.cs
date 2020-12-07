@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using Application.Common.Exceptions;
 using Application.Common.Services;
@@ -64,11 +65,35 @@ namespace TestTravelPavlo.Controllers
         [Route("[action]")]
         public async Task<IActionResult> Import(IFormFile file)
         {
-            using (var stream = file.OpenReadStream())
+            try
             {
-                var importResult = await _importService.Import(_importService.GetEntitiesFromFile(stream));
-                return Ok(importResult);
+                CheckZipImportFile(file);
+                using (var stream = file.OpenReadStream())
+                {
+                    var importResult = await _importService.Import(_importService.GetEntitiesFromFile(stream));
+                    return Ok(importResult);
+                }
             }
+            catch(CustomExceptionBase e)
+            {
+                return BadRequest(e.Message);
+            }
+            catch
+            {
+                return new StatusCodeResult(500);
+            }
+        }
+
+        private void CheckZipImportFile(IFormFile file)
+        {
+            if (file == null)
+                throw new ArgumentNullException(nameof(file));
+
+            if (file.ContentType != "application/x-zip-compressed")
+                throw new InvalidFileFormatException($"Wrong file content type for '{file.FileName}'. Expected: 'application/x-zip-compressed'.");
+            
+            if (Path.GetExtension(file.FileName) != ".zip")
+                throw new InvalidFileFormatException($"Wrong file extension for '{file.FileName}'. Expected: 'zip'.");
         }
     }
 }

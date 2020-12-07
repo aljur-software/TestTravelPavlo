@@ -8,14 +8,17 @@ using Domain.Entities;
 using Infractructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Application.Common.Interfaces;
 
 namespace Infractructure.BulkData
 {
-    public class AgencyBulkImport 
+    public class AgencyBulkImport : IBulkImport<Agency>
     {
         private const string AGENTS_TABLE_NAME = "Agents";
         private const string AGENCIES_TABLE_NAME = "Agencies";
         private const string RELATION_TABLE_NAME = "AgencyAgent";
+        private const string AGENCIES_TO_AGENTS_TABLE_FIELDS = "AgenciesId,AgentsId";
+        private const string CSV_FILE_EXTENTION = ".csv";
 
         private readonly ApplicationDbContext _repository;
         private readonly IConfiguration _configuration;
@@ -26,67 +29,71 @@ namespace Infractructure.BulkData
             _configuration = configuration;
         }
 
-        public void Import(IEnumerable<Agency> records)
+        public bool Import(IEnumerable<Agency> records)
         {
             var path = _configuration.GetSection("BulkSettings").GetChildren()
                 .FirstOrDefault(_ => _.Key == "FolderForTempCSV")?.Value;
-
             ImportAgencies(path, records);
-
             foreach (var record in records)
             {
                 ImportAgents(path, record);
                 ImportRelation(path, record);
             }
+
+            return true;
         }
+
         private void ImportAgencies(string path, IEnumerable<Agency> agencies)
         {
-            var filepath = path + @"\" + Guid.NewGuid() + ".csv";
+            var filepath = path + @"\" + Guid.NewGuid() + CSV_FILE_EXTENTION;
             var resultCsv = ToCsv(",", agencies);
             InsertEntities(filepath, AGENCIES_TABLE_NAME, resultCsv);
-
         }
 
         private void InsertEntities(string path, string tableName, string csv)
         {
-            using (var fs = File.Create(path))
+            try
             {
-                var content = new UTF8Encoding(true).GetBytes(csv);
-                fs.Write(content, 0, content.Length);
-            }
+                using (var fs = File.Create(path))
+                {
+                    var content = new UTF8Encoding(true).GetBytes(csv);
+                    fs.Write(content, 0, content.Length);
+                }
 
-            var query = $"COPY \"{tableName}\" FROM '{path}' DELIMITER ',' CSV HEADER";
-            _repository.Database.ExecuteSqlRaw(query);
-            File.Delete(path);
+                var query = $"COPY \"{tableName}\" FROM '{path}' DELIMITER ',' CSV HEADER";
+                _repository.Database.ExecuteSqlRaw(query);
+            }
+            finally
+            {
+                if(File.Exists(path))
+                    File.Delete(path);
+            }
         }
 
         private void ImportAgents(string path, Agency agency)
         {
-            var filepath = path + @"\" + Guid.NewGuid() + ".csv";
+            var filepath = path + @"\" + Guid.NewGuid() + CSV_FILE_EXTENTION;
             var resultCsv = ToCsv(",", agency.Agents);
             InsertEntities(filepath, AGENTS_TABLE_NAME, resultCsv);
         }
 
         private void ImportRelation(string path, Agency agency)
         {
-            var filepath = path + @"\" + Guid.NewGuid() + ".csv";
+            var filepath = path + @"\" + Guid.NewGuid() + CSV_FILE_EXTENTION;
             var resultCsv = ToCsvRelations(",", agency);
-
             InsertEntities(filepath, RELATION_TABLE_NAME, resultCsv);
         }
 
         private string ToCsv<T>(string separator, IEnumerable<T> objectList)
         {
-            if (objectList == null) 
-                throw new ArgumentNullException(nameof(objectList));
-            var t = typeof(T);
-            var fields = t.GetProperties();
-
-            var header = string.Join(separator, fields.Where(f => !(f.Name == "Agencies" || f.Name == "Agents")).Select(f => f.Name).ToArray());
-
+            var type = typeof(T);
+            var fields = type.GetProperties();
+            var header = string.Join(separator, fields
+                                                    .Where(p => !(p.Name == AGENCIES_TABLE_NAME || p.Name == AGENTS_TABLE_NAME))
+                                                    .Select(p => p.Name)
+                                                    .ToArray());
             var csvdata = new StringBuilder();
             csvdata.AppendLine(header);
-
             foreach (var o in objectList)
             {
                 csvdata.AppendLine(ToCsvProperties(separator, fields, o));
@@ -95,38 +102,33 @@ namespace Infractructure.BulkData
             return csvdata.ToString();
         }
 
-        private string ToCsvRelations(string separator, Agency objectlist)
+        private string ToCsvRelations(string separator, Agency agency)
         {
-            var header = "AgenciesId,AgentsId";
             var csvData = new StringBuilder();
-            csvData.AppendLine(header);
-
-            foreach (var o in objectlist.Agents)
+            csvData.AppendLine(AGENCIES_TO_AGENTS_TABLE_FIELDS);
+            foreach (var agent in agency.Agents)
             {
-                csvData.AppendLine(objectlist.Id + "," + o.Id);
+                csvData.AppendLine(agency.Id + separator + agent.Id);
             }
 
             return csvData.ToString();
         }
 
-        private string ToCsvProperties(string separator, PropertyInfo[] properties, object o)
+        private string ToCsvProperties(string separator, PropertyInfo[] properties, object obj)
         {
-            var linie = new StringBuilder();
-
-            foreach (var f in properties)
+            var lines = new StringBuilder();
+            foreach (var property in properties)
             {
-                if (f.Name == "Agencies" || f.Name == "Agents")
+                if (property.Name == AGENCIES_TABLE_NAME || property.Name == AGENTS_TABLE_NAME)
                     continue;
-
-                if (linie.Length > 0)
-                    linie.Append(separator);
-
-                var x = f.GetValue(o);
-
-                if (x != null)
-                    linie.Append(x);
+                if (lines.Length > 0)
+                    lines.Append(separator);
+                var propValue = property.GetValue(obj);
+                if (propValue != null)
+                    lines.Append(propValue);
             }
-            return linie.ToString();
+
+            return lines.ToString();
         }
     }
 }
