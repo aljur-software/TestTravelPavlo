@@ -28,32 +28,51 @@ namespace TestTravelPavlo.Controllers
         {
             try
             {
-                var result = await _agentService.GetById(id);
-
-                return Ok(result);
+                return Ok(await _agentService.GetById(id));
             }
             catch (NotFoundException<Guid>)
             {
                 return NotFound();
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, Request.Path);
+                return new StatusCodeResult(500);
             }
         }
 
         [HttpGet]
         public async Task<IActionResult> Get([FromQuery] PaginationFilter filter)
         {
-            return Ok(await _agentService.FilterAsync(filter));
+            try
+            {
+                return Ok(await _agentService.FilterAsync(filter));
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, Request.Path);
+                return new StatusCodeResult(500);
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(CreateAgentCommand command)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
-            }
-            var result = await _agentService.CreateAsync(command);
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+                var result = await _agentService.CreateAsync(command);
 
-            return Created($"/agent/{result.Id}", result);
+                return Created($"/agent/{result.Id}", result);
+            }
+            catch(Exception e)
+            {
+                _logger.LogError(e, Request.Path);
+                return new StatusCodeResult(500);
+            }
         }
 
         [HttpPut]
@@ -66,13 +85,16 @@ namespace TestTravelPavlo.Controllers
             }
             try
             {
-                var result = await _agentService.AddAgentToAgency(command);
-
-                return Ok(result);
+                return Ok(await _agentService.AddAgentToAgency(command));
             }
             catch (NotFoundException<Guid>)
             {
                 return NotFound();
+            }
+            catch(Exception e)
+            {
+                _logger.LogError(e, Request.Path);
+                return new StatusCodeResult(500);
             }
         }
     }

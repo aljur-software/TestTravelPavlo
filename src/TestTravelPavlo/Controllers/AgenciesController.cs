@@ -16,11 +16,9 @@ namespace TestTravelPavlo.Controllers
     [Route("[controller]")]
     public class AgenciesController : ControllerBase
     {
-
         private readonly ILogger<AgenciesController> _logger;
         private readonly IAgencyService _agencyservice;
         private readonly IImportService<Agency> _importService;
-
 
         public AgenciesController(ILogger<AgenciesController> logger, IAgencyService agencyservice, IImportService<Agency> importService)
         {
@@ -41,24 +39,45 @@ namespace TestTravelPavlo.Controllers
             {
                 return NotFound();
             }
+            catch(Exception e)
+            {
+                _logger.LogError(e, Request.Path);
+                return new StatusCodeResult(500);
+            }
         }
 
         [HttpGet]
         public async Task<IActionResult> Get([FromQuery]PaginationFilter filter)
         {
-            return Ok(await _agencyservice.FilterAsync(filter));
+            try
+            {
+                return Ok(await _agencyservice.FilterAsync(filter));
+            }
+            catch(Exception e)
+            {
+                _logger.LogError(e, Request.Path);
+                return new StatusCodeResult(500);
+            }
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(CreateAgencyCommand command)
         {
-            if (!ModelState.IsValid)
+            try
             {
-                return BadRequest(ModelState);
-            }
-            var result = await _agencyservice.CreateAsync(command);
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+                var result = await _agencyservice.CreateAsync(command);
 
-            return Created($"/agencies/{result.Id}" ,result);
+                return Created($"/agencies/{result.Id}", result);
+            }
+            catch(Exception e)
+            {
+                _logger.LogError(e, Request.Path);
+                return new StatusCodeResult(500);
+            }
         }
 
         [HttpPost]
@@ -70,16 +89,16 @@ namespace TestTravelPavlo.Controllers
                 CheckZipImportFile(file);
                 using (var stream = file.OpenReadStream())
                 {
-                    var importResult = await _importService.Import(_importService.GetEntitiesFromFile(stream));
-                    return Ok(importResult);
+                    return Ok(await _importService.Import(_importService.GetEntitiesFromFile(stream)));
                 }
             }
             catch(CustomExceptionBase e)
             {
                 return BadRequest(e.Message);
             }
-            catch
+            catch(Exception e)
             {
+                _logger.LogError(e, Request.Path);
                 return new StatusCodeResult(500);
             }
         }
