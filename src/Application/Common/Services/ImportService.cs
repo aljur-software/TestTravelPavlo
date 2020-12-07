@@ -7,7 +7,7 @@ namespace Application.Common.Services
 {
     public interface IImportService<T> where T : class
     {
-        IEnumerable<T> GetEntitiesFromFile(Stream fileStream);
-        Task<ImportResult> Import(IEnumerable<T> entities);
+        ICollection<T> GetEntitiesFromFile(Stream fileStream);
+        Task<bool> Import(ICollection<T> entities);
     }
 }

@@ -1,7 +1,7 @@
-﻿using Application.Common.Services;
+﻿using Application.Common.Exceptions;
+using Application.Common.Interfaces;
+using Application.Common.Services;
 using Domain.Entities;
-using Domain.Import;
-using Infractructure.BulkData;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,46 +13,77 @@ namespace Services
 {
     public class ImportAgenciesWithAgentsFromZipService : IImportService<Agency>
     {
-        private readonly AgencyBulkImport _agencyRepository;
+        private readonly IBulkImport<Agency> _bulk;
 
-        public ImportAgenciesWithAgentsFromZipService(AgencyBulkImport agencyRepository)
+        public ImportAgenciesWithAgentsFromZipService(IBulkImport<Agency> bulk)
         {
-            _agencyRepository = agencyRepository;
+            _bulk = bulk;
         }
 
-        public IEnumerable<Agency> GetEntitiesFromFile(Stream fileStream)
+        public ICollection<Agency> GetEntitiesFromFile(Stream fileStream)
         {
-            var result = new List<Agency>();
-            using (var archive = new ZipArchive(fileStream))
+            try
             {
-                var entries = archive.Entries;
-                foreach (var entry in entries)
+                var result = new List<Agency>();
+                using (var archive = new ZipArchive(fileStream))
                 {
-                    result.Add(DeserializeEntry(entry));
+                    var entries = archive.Entries;
+                    foreach (var entry in entries)
+                    {
+                        ChackEntrieIsXML(entry);
+                        result.Add(DeserializeEntry(entry));
+                    }
+                    return result;
                 }
             }
-
-            return result;
+          
+            catch(Exception e) when (e.GetType() != typeof(XMLDeserializeException))
+            {
+                var exceptionMessage = "Zip archive is corrupted" + "\n" + e.Message;
+                if (e.InnerException != null)
+                {
+                    exceptionMessage += "\n";
+                    exceptionMessage += e.InnerException.Message;
+                }
+                throw new ArchiveIsEmptyOrCorruptedException(exceptionMessage);
+            }
         }
 
-        public async Task<ImportResult> Import(IEnumerable<Agency> entities)
+        public async Task<bool> Import(ICollection<Agency> entities)
         {
             if (entities == null)
                 throw new ArgumentNullException(nameof(entities));
-            var result = new ImportResult();
-            _agencyRepository.Import(entities);
+            if (entities.Count == 0)
+                throw new ArchiveIsEmptyOrCorruptedException("Archive is empty");
+            _bulk.Import(entities);
 
-            return result;
+            return true;
         }
 
         private Agency DeserializeEntry(ZipArchiveEntry entry)
         {
-            if(entry == null)
-                throw new ArgumentNullException(nameof(entry));
-            var serializer = new XmlSerializer(typeof(Agency), new XmlRootAttribute() { ElementName = "Agency" });
-            var result = (Agency)serializer.Deserialize(entry.Open());
+            try
+            {
+                var serializer = new XmlSerializer(typeof(Agency), new XmlRootAttribute() { ElementName = "Agency" });
+                var result = (Agency)serializer.Deserialize(entry.Open());
+                return result;
+            }
+            catch(Exception e)
+            {
+                var exceptionMessage = $"Xml document '{entry.FullName}' is corrupted." + "\n" + e.Message;
+                if (e.InnerException != null)
+                {
+                    exceptionMessage += "\n";
+                    exceptionMessage += e.InnerException.Message;
+                }
+                throw new XMLDeserializeException(exceptionMessage);
+            }
+        }
 
-            return result;
+        private void ChackEntrieIsXML(ZipArchiveEntry entry)
+        {
+            if (Path.GetExtension(entry.FullName) != ".xml")
+                throw new InvalidFileFormatException($"Wrong file format for {entry.FullName} in zip archive. Expected: 'xml'.");
         }
     }
 }

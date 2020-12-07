@@ -9,6 +9,9 @@ using Microsoft.OpenApi.Models;
 using Infractructure;
 using Services;
 using TestTravelPavlo.AutoMapper;
+using System.Linq;
+using System;
+using System.IO;
 
 namespace TestTravelPavlo
 {
@@ -23,6 +26,7 @@ namespace TestTravelPavlo
 
         public void ConfigureServices(IServiceCollection services)
         {
+            CheckOnStartup();
             services.AddControllers().AddNewtonsoftJson(options =>
                 options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
             );
@@ -52,6 +56,18 @@ namespace TestTravelPavlo
             {
                 endpoints.MapControllers();
             });
+        }
+
+        private void CheckOnStartup()
+        {
+            var path = Configuration.GetSection("BulkSettings").GetChildren()
+               .FirstOrDefault(_ => _.Key == "FolderForTempCSV")?.Value;
+
+            if (string.IsNullOrEmpty(path))
+                throw new Exception("FolderForTempCsv is empty. Indicate FolderForTempCSV in appsettings.json file.");
+
+            if (!Directory.Exists(path))
+                throw new Exception($"The Directory {path} is not exist.");
         }
     }
 }
